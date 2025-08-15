@@ -52,7 +52,23 @@ Content-Type: application/json
 **Example Success Response (200):**
 {
   "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI...",
-  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI..."
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI...",
+  "user": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "role": "user",
+    "bio": "Hello, I'm John!",
+    "avatar_url": "https://example.com/avatar.jpg",
+    "website": "https://johnsportfolio.com",
+    "location": "New York, USA",
+    "is_email_verified": false,
+    "privacy_setting": "public",
+    "followers_count": 0,
+    "following_count": 0,
+    "posts_count": 0,
+    "date_joined": "2024-01-15T10:30:00Z"
+  }
 }
 
 ---
@@ -153,9 +169,9 @@ Content-Type: application/json
 ---
 
 ## 8. Email Verification
-**Endpoint:** GET /verify-email/{token}/
+**Endpoint:** GET /verify-email/?token={token}
 
 **Example Success Response (200):**
 {
-  "message": "Email verified successfully."
+  "detail": "Email verified."
 }

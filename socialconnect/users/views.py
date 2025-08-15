@@ -148,8 +148,12 @@ class MyProfileView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+        try:
+            serializer = UserSerializer(request.user)
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"Error in MyProfileView.get: {e}")
+            return Response({"detail": f"Error serializing user data: {str(e)}"}, status=400)
     
     def put(self, request):
         serializer = ProfileUpdateSerializer(request.user, data=request.data, partial=True)

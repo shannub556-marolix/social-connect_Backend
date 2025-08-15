@@ -17,7 +17,7 @@ urlpatterns = [
     path("verify-email/", VerifyEmailView.as_view(), name="verify-email"),
     path("password-reset/", PasswordResetRequestView.as_view(), name="password_reset"),
     path("password-reset/confirm/", PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
-    path("password-change/", ChangePasswordView.as_view(), name="password_change"),
+    path("change-password/", ChangePasswordView.as_view(), name="password_change"),
     
     # Profile endpoints
     path("me/", MyProfileView.as_view(), name="my_profile"),
