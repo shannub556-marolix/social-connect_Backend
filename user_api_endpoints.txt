@@ -1,0 +1,161 @@
+# SocialConnect Auth API Documentation
+
+## Base URL
+http://localhost:8000/api/auth/
+
+---
+
+## 1. Register
+**Endpoint:** POST /register/
+
+**Headers:**
+Content-Type: application/json
+
+**Request Body:**
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "StrongPass123!",
+  "password2": "StrongPass123!",
+  "role": "user",
+  "bio": "Hello, I'm John!",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "website": "https://johnsportfolio.com",
+  "location": "New York, USA"
+}
+
+**Example Success Response (201):**
+{
+  "message": "User registered successfully. Please verify your email."
+}
+
+---
+
+## 2. Login
+**Endpoint:** POST /login/
+
+**Headers:**
+Content-Type: application/json
+
+**Request Body (Username):**
+{
+  "username": "john_doe",
+  "password": "StrongPass123!"
+}
+
+**Request Body (Email):**
+{
+  "email": "john@example.com",
+  "password": "StrongPass123!"
+}
+
+**Example Success Response (200):**
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI...",
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI..."
+}
+
+---
+
+## 3. Token Refresh
+**Endpoint:** POST /token/refresh/
+
+**Headers:**
+Content-Type: application/json
+
+**Request Body:**
+{
+  "refresh": "your_refresh_token_here"
+}
+
+**Example Success Response (200):**
+{
+  "access": "new_access_token_here"
+}
+
+---
+
+## 4. Logout
+**Endpoint:** POST /logout/
+
+**Headers:**
+Content-Type: application/json
+Authorization: Bearer your_access_token_here
+
+**Request Body:**
+{
+  "refresh": "your_refresh_token_here"
+}
+
+**Example Success Response (200):**
+{
+  "message": "Successfully logged out."
+}
+
+---
+
+## 5. Change Password
+**Endpoint:** POST /change-password/
+
+**Headers:**
+Content-Type: application/json
+Authorization: Bearer your_access_token_here
+
+**Request Body:**
+{
+  "old_password": "StrongPass123!",
+  "new_password": "NewStrongPass456!"
+}
+
+**Example Success Response (200):**
+{
+  "message": "Password changed successfully."
+}
+
+---
+
+## 6. Password Reset Request
+**Endpoint:** POST /password-reset/
+
+**Headers:**
+Content-Type: application/json
+
+**Request Body:**
+{
+  "email": "john@example.com"
+}
+
+**Example Success Response (200):**
+{
+  "message": "Password reset email sent."
+}
+
+---
+
+## 7. Password Reset Confirm
+**Endpoint:** POST /password-reset-confirm/
+
+**Headers:**
+Content-Type: application/json
+
+**Request Body:**
+{
+  "uid": "encoded_user_id",
+  "token": "reset_token_here",
+  "new_password": "NewStrongPass456!"
+}
+
+**Example Success Response (200):**
+{
+  "message": "Password has been reset successfully."
+}
+
+---
+
+## 8. Email Verification
+**Endpoint:** GET /verify-email/{token}/
+
+**Example Success Response (200):**
+{
+  "message": "Email verified successfully."
+}

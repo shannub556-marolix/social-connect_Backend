@@ -1,0 +1,145 @@
+SocialConnect – Authentication Module Documentation
+Version: 1.0
+Module: Authentication
+Prepared by: Development Team
+Last Updated: 13-Aug-2025
+
+1. Overview
+The Authentication Module is responsible for managing user identity, secure login, logout, registration, password management, and email verification within the SocialConnect platform.
+
+It is built on Django REST Framework with JWT-based authentication for secure, stateless user sessions.
+
+2. Objectives
+Securely register and authenticate users
+
+Enable JWT token-based stateless authentication
+
+Support email verification for account activation
+
+Provide password management (change & reset)
+
+Ensure proper access control across other modules
+
+3. Features Implemented
+Core Features
+User Registration – Supports username, email, password, profile details.
+
+User Login – Allows login via username or email.
+
+Logout – Blacklists refresh tokens to end session.
+
+JWT Token Refresh – Issues new access tokens without re-login.
+
+Password Change – Allows logged-in users to update their password.
+
+Password Reset – Sends email with secure reset link.
+
+Email Verification – Ensures only verified accounts can access the platform.
+
+Additional Enhancements
+Strong password validation rules.
+
+Account lockout after multiple failed attempts (configurable).
+
+Role-based account creation (e.g., user, admin).
+
+4. Tech Stack
+Layer	Technology
+Backend	Django 4.x, Django REST Framework
+Authentication	Simple JWT
+Database	PostgreSQL
+Email Service	Django Email Backend (configurable for SMTP)
+Security	HTTPS, JWT, CSRF protection
+
+5. Architecture
+Backend Architecture: Follows Django REST MVC pattern.
+
+Auth Flow:
+
+User sends credentials → API validates → Issues JWT tokens
+
+Access token used for API requests; refresh token used for renewal
+
+Logout → Refresh token blacklisted
+
+6. Database Design
+Entity: User (extends AbstractUser in Django)
+
+Field	Type	Description
+id	UUID/Int	Primary Key
+username	String	Unique username
+email	String	Unique email
+password	Hashed	User password
+role	Enum	user / admin
+bio	Text	Profile bio
+avatar_url	String	Profile picture
+website	String	Personal website
+location	String	Location info
+is_active	Boolean	Account activation status
+created_at	DateTime	Created timestamp
+updated_at	DateTime	Updated timestamp
+
+7. API Summary
+Endpoint	Method	Description
+/auth/register/	POST	Register new user
+/auth/login/	POST	Login user
+/auth/logout/	POST	Logout user
+/auth/token/refresh/	POST	Refresh access token
+/auth/password/change/	POST	Change password
+/auth/password/reset/	POST	Request reset link
+/auth/verify-email/<token>/	GET	Verify email
+
+8. User Flow
+Registration & Email Verification
+User submits registration form
+
+System stores details, sends verification email
+
+User clicks link → Account activated
+
+Login & Token Management
+User submits credentials
+
+System validates → Returns access + refresh tokens
+
+Client uses access token in headers for all requests
+
+9. Security Considerations
+Passwords stored using PBKDF2 hashing
+
+Tokens have short expiry to reduce misuse risk
+
+Refresh tokens stored securely (HTTP-only cookies or secure storage)
+
+Rate limiting on login attempts to prevent brute force attacks
+
+Email verification mandatory before activation
+
+10. Error Handling Strategy
+400 Bad Request – Invalid input data
+
+401 Unauthorized – Invalid credentials / expired token
+
+403 Forbidden – Action not allowed
+
+404 Not Found – Resource not found
+
+500 Internal Server Error – Server failures
+
+All error responses follow a JSON format:
+
+json
+Copy
+Edit
+{
+  "error": "Error message here"
+}
+11. Future Enhancements
+OAuth2 & Social Login (Google, Facebook, GitHub)
+
+Multi-Factor Authentication (MFA)
+
+Account Activity Logs
+
+Session Management Dashboard for users
+

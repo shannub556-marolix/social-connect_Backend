@@ -1,0 +1,391 @@
+# User Profiles Module Documentation
+
+## 📋 Overview
+
+The User Profiles module provides comprehensive user profile management functionality including profile viewing, updating, avatar uploads, and social features like following/following relationships. The module implements privacy controls and supports three different visibility levels.
+
+## 🏗️ Architecture
+
+### Models
+- **User**: Extended Django user model with profile fields
+- **Follow**: Many-to-many relationship for following/following functionality
+
+### Key Features
+- Profile management (view, update)
+- Avatar upload with Supabase Storage integration
+- Social following system
+- Privacy controls (public, private, followers-only)
+- JWT-based authentication
+
+## 🔐 API Endpoints
+
+### 1. Profile Management
+
+#### Get My Profile
+```
+GET /api/auth/me/
+Authorization: Bearer <access_token>
+```
+**Description**: Retrieve current user's complete profile information
+
+**Response (200 OK)**:
+```json
+{
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "role": "user",
+    "bio": "Software developer passionate about React and Django",
+    "avatar_url": "https://yxxbnqjldcydvxkmskgm.supabase.co/storage/v1/object/public/avatars/1/uuid-filename.jpg",
+    "website": "https://johndoe.dev",
+    "location": "San Francisco, CA",
+    "is_email_verified": true,
+    "privacy_setting": "public",
+    "followers_count": 5,
+    "following_count": 3,
+    "posts_count": 0
+}
+```
+
+#### Update My Profile
+```
+PUT /api/auth/me/
+PATCH /api/auth/me/
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+**Description**: Update current user's profile information
+
+**Request Body**:
+```json
+{
+    "bio": "Full-stack developer passionate about React and Django",
+    "website": "https://johndoe.dev",
+    "location": "San Francisco, CA",
+    "privacy_setting": "followers_only"
+}
+```
+
+**Response (200 OK)**: Returns updated user profile
+
+### 2. Avatar Management
+
+#### Upload Avatar
+```
+POST /api/auth/me/avatar/
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+```
+**Description**: Upload user avatar image
+
+**Request Body (Form Data)**:
+```
+avatar: [file upload - JPEG/PNG, max 2MB]
+```
+
+**Response (200 OK)**:
+```json
+{
+    "detail": "Avatar uploaded successfully.",
+    "avatar_url": "https://yxxbnqjldcydvxkmskgm.supabase.co/storage/v1/object/public/avatars/1/uuid-filename.jpg"
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: File validation errors (size, format, etc.)
+- `400 Bad Request`: Supabase upload errors
+
+#### Avatar Upload Test Endpoint
+```
+POST /api/auth/me/avatar/test/
+Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+```
+**Description**: Debug endpoint to test avatar upload configuration
+
+**Response (200 OK)**:
+```json
+{
+    "message": "Avatar upload test",
+    "files_received": ["avatar"],
+    "content_type": "multipart/form-data; boundary=...",
+    "user_id": 2,
+    "environment_vars": {
+        "SUPABASE_URL": true,
+        "SUPABASE_KEY": true,
+        "SUPABASE_STORAGE_BUCKET": "avatars"
+    },
+    "file_name": "Screenshot (1).png",
+    "file_size": 36830,
+    "file_content_type": "image/png",
+    "file_extension": ".png"
+}
+```
+
+### 3. User Discovery
+
+#### Get User Profile
+```
+GET /api/auth/{user_id}/
+```
+**Description**: Get specific user's profile (respects privacy settings)
+
+**Response (200 OK)**: User profile object
+
+**Error Responses**:
+- `404 Not Found`: User doesn't exist
+- `403 Forbidden`: "Profile is private." (private profile)
+- `401 Unauthorized`: "Authentication required." (followers_only without auth)
+- `403 Forbidden`: "Profile is only visible to followers." (followers_only without following)
+
+### 4. Social Features
+
+#### Follow User
+```
+POST /api/auth/{user_id}/follow/
+Authorization: Bearer <access_token>
+```
+**Description**: Follow a specific user
+
+**Response (201 Created)**:
+```json
+{
+    "detail": "You are now following jane_smith."
+}
+```
+
+**Error Responses**:
+- `400 Bad Request`: "Cannot follow yourself."
+- `404 Not Found`: "User not found."
+- `400 Bad Request`: "You are already following this user."
+
+#### Unfollow User
+```
+DELETE /api/auth/{user_id}/follow/
+Authorization: Bearer <access_token>
+```
+**Description**: Unfollow a specific user
+
+**Response (204 No Content)**: Empty response
+
+**Error Response (400 Bad Request)**:
+```json
+{
+    "detail": "You are not following this user."
+}
+```
+
+#### Get User's Followers
+```
+GET /api/auth/{user_id}/followers/
+```
+**Description**: Get list of users following the specified user (respects privacy settings)
+
+**Response (200 OK)**:
+```json
+[
+    {
+        "id": 1,
+        "follower": {
+            "id": 3,
+            "username": "bob_wilson",
+            "email": "bob@example.com",
+            "role": "user",
+            "bio": "Photographer",
+            "avatar_url": "https://example.com/bob-avatar.jpg",
+            "website": null,
+            "location": "Paris, France",
+            "is_email_verified": true,
+            "privacy_setting": "public",
+            "followers_count": 2,
+            "following_count": 15,
+            "posts_count": 0
+        },
+        "following": {
+            "id": 2,
+            "username": "jane_smith",
+            "email": "jane@example.com",
+            "role": "user",
+            "bio": "UX Designer",
+            "avatar_url": "https://example.com/jane-avatar.jpg",
+            "website": "https://janesmith.design",
+            "location": "London, UK",
+            "is_email_verified": true,
+            "privacy_setting": "public",
+            "followers_count": 12,
+            "following_count": 8,
+            "posts_count": 0
+        },
+        "created_at": "2024-01-15T10:30:00Z"
+    }
+]
+```
+
+#### Get User's Following
+```
+GET /api/auth/{user_id}/following/
+```
+**Description**: Get list of users that the specified user is following (respects privacy settings)
+
+**Response (200 OK)**: Array of follow relationships (same structure as followers)
+
+## 🔒 Privacy System
+
+### Privacy Levels
+The system implements three privacy levels for user profiles:
+
+1. **`public`** (Default)
+   - Profile visible to everyone
+   - No authentication required
+   - All profile data accessible
+
+2. **`private`**
+   - Profile only visible to the user themselves
+   - Requires authentication
+   - Other users get "Profile is private." error
+
+3. **`followers_only`**
+   - Profile visible to authenticated users who follow the profile owner
+   - Requires authentication
+   - Non-followers get "Profile is only visible to followers." error
+
+### Privacy Enforcement
+Privacy settings are automatically enforced across all endpoints:
+- Profile viewing
+- Followers list
+- Following list
+- Any profile-related data access
+
+## 🗄️ Database Models
+
+### User Model (Extended)
+```python
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="user")
+    bio = models.TextField(blank=True, null=True)
+    avatar_url = models.URLField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    is_email_verified = models.BooleanField(default=False)
+    privacy_setting = models.CharField(max_length=15, choices=PRIVACY_CHOICES, default="public")
+    
+    # Computed properties
+    @property
+    def followers_count(self)
+    @property
+    def following_count(self)
+    @property
+    def posts_count(self)
+```
+
+### Follow Model
+```python
+class Follow(models.Model):
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('follower', 'following')
+        ordering = ['-created_at']
+```
+
+## 🛠️ Implementation Details
+
+### Avatar Upload System
+- **Storage**: Supabase Storage with S3-compatible API
+- **File Validation**: Size (max 2MB), format (JPEG/PNG), content validation
+- **File Naming**: `avatars/{user_id}/{uuid}.{extension}`
+- **Error Handling**: Comprehensive validation and upload error handling
+
+### Environment Variables Required
+```env
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_KEY=your-anon-key
+SUPABASE_STORAGE_BUCKET=avatars
+```
+
+### Supabase Storage Setup
+1. Create storage bucket named `avatars`
+2. Configure RLS policies or disable RLS for testing
+3. Set bucket to public (optional, for direct avatar access)
+
+### File Upload Configuration
+```python
+# Django settings
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+```
+
+## 🔧 Error Handling
+
+### Common Error Responses
+- **400 Bad Request**: Validation errors, file upload issues
+- **401 Unauthorized**: Missing or invalid authentication
+- **403 Forbidden**: Privacy restrictions
+- **404 Not Found**: User doesn't exist
+- **500 Internal Server Error**: Server-side issues
+
+### Error Response Format
+```json
+{
+    "detail": "Human-readable error message",
+    "error": "Technical error details (optional)"
+}
+```
+
+## 📊 Performance Considerations
+
+### Database Optimization
+- Indexes on frequently queried fields (email, username)
+- Efficient follow relationship queries
+- Computed properties for counts
+
+### File Upload Optimization
+- Memory-based upload handling for small files
+- Temporary file handling for larger files
+- Async upload processing (future enhancement)
+
+## 🔮 Future Enhancements
+
+### Planned Features
+1. **Avatar Image Processing**: Automatic resizing and optimization
+2. **Batch Operations**: Follow/unfollow multiple users
+3. **Profile Analytics**: View counts, engagement metrics
+4. **Profile Verification**: Badge system for verified users
+5. **Custom Profile Fields**: User-defined profile sections
+
+### Technical Improvements
+1. **Caching**: Redis-based caching for profile data
+2. **CDN Integration**: Global avatar delivery
+3. **Real-time Updates**: WebSocket integration for live follower counts
+4. **Search Functionality**: User search and discovery
+
+## 🧪 Testing
+
+### Manual Testing Checklist
+- [ ] Profile creation and retrieval
+- [ ] Profile updates (all fields)
+- [ ] Avatar upload (various file types and sizes)
+- [ ] Privacy settings enforcement
+- [ ] Follow/unfollow functionality
+- [ ] Followers/following lists
+- [ ] Error handling scenarios
+- [ ] Authentication requirements
+
+### API Testing Tools
+- Postman collections available
+- Debug endpoints for troubleshooting
+- Comprehensive error logging
+
+## 📚 Related Documentation
+- Authentication Module Documentation
+- Supabase Integration Guide
+- API Error Codes Reference
+- Frontend Integration Guide

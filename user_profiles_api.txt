@@ -1,0 +1,246 @@
+# User Profiles API Documentation
+
+## 🔐 Profile Endpoints
+
+### 1. Get My Profile
+**Endpoint:** `GET /api/auth/me/`
+**Headers:** `Authorization: Bearer <access_token>`
+**Description:** Get current user's profile
+
+**Response (200 OK):**
+```json
+{
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "role": "user",
+    "bio": "Software developer",
+    "avatar_url": "https://example.com/avatar.jpg",
+    "website": "https://johndoe.com",
+    "location": "New York, USA",
+    "is_email_verified": true,
+    "privacy_setting": "public",
+    "followers_count": 5,
+    "following_count": 3,
+    "posts_count": 0
+}
+```
+
+### 2. Update My Profile
+**Endpoint:** `PUT /api/auth/me/` or `PATCH /api/auth/me/`
+**Headers:** `Authorization: Bearer <access_token>`
+**Description:** Update current user's profile
+
+**Request Body:**
+```json
+{
+    "bio": "Full-stack developer passionate about React and Django",
+    "website": "https://johndoe.dev",
+    "location": "San Francisco, CA",
+    "privacy_setting": "followers_only"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "role": "user",
+    "bio": "Full-stack developer passionate about React and Django",
+    "avatar_url": "https://example.com/avatar.jpg",
+    "website": "https://johndoe.dev",
+    "location": "San Francisco, CA",
+    "is_email_verified": true,
+    "privacy_setting": "followers_only",
+    "followers_count": 5,
+    "following_count": 3,
+    "posts_count": 0
+}
+```
+
+### 3. Upload Avatar
+**Endpoint:** `POST /api/auth/me/avatar/`
+**Headers:** `Authorization: Bearer <access_token>`
+**Content-Type:** `multipart/form-data`
+**Description:** Upload avatar image (JPEG/PNG, max 2MB)
+
+**Request Body (Form Data):**
+```
+avatar: [file upload]
+```
+
+**Response (200 OK):**
+```json
+{
+    "detail": "Avatar uploaded successfully.",
+    "avatar_url": "https://supabase-url/storage/v1/object/public/avatars/1/uuid-filename.jpg"
+}
+```
+
+### 4. Get User Profile
+**Endpoint:** `GET /api/auth/{user_id}/`
+**Description:** Get specific user's profile (respects privacy settings)
+
+**Response (200 OK):**
+```json
+{
+    "id": 2,
+    "username": "jane_smith",
+    "email": "jane@example.com",
+    "role": "user",
+    "bio": "UX Designer",
+    "avatar_url": "https://example.com/jane-avatar.jpg",
+    "website": "https://janesmith.design",
+    "location": "London, UK",
+    "is_email_verified": true,
+    "privacy_setting": "public",
+    "followers_count": 12,
+    "following_count": 8,
+    "posts_count": 0
+}
+```
+
+**Error Responses:**
+- `403 Forbidden`: "Profile is private." (if user has private profile)
+- `401 Unauthorized`: "Authentication required." (if followers_only and not authenticated)
+- `403 Forbidden`: "Profile is only visible to followers." (if followers_only and not following)
+
+### 5. Follow User
+**Endpoint:** `POST /api/auth/{user_id}/follow/`
+**Headers:** `Authorization: Bearer <access_token>`
+**Description:** Follow a user
+
+**Response (201 Created):**
+```json
+{
+    "detail": "You are now following jane_smith."
+}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+    "detail": "Cannot follow yourself."
+}
+```
+
+### 6. Unfollow User
+**Endpoint:** `DELETE /api/auth/{user_id}/follow/`
+**Headers:** `Authorization: Bearer <access_token>`
+**Description:** Unfollow a user
+
+**Response (204 No Content):**
+```json
+{}
+```
+
+**Error Response (400 Bad Request):**
+```json
+{
+    "detail": "You are not following this user."
+}
+```
+
+### 7. Get User's Followers
+**Endpoint:** `GET /api/auth/{user_id}/followers/`
+**Description:** Get list of user's followers (respects privacy settings)
+
+**Response (200 OK):**
+```json
+[
+    {
+        "id": 1,
+        "follower": {
+            "id": 3,
+            "username": "bob_wilson",
+            "email": "bob@example.com",
+            "role": "user",
+            "bio": "Photographer",
+            "avatar_url": "https://example.com/bob-avatar.jpg",
+            "website": null,
+            "location": "Paris, France",
+            "is_email_verified": true,
+            "privacy_setting": "public",
+            "followers_count": 2,
+            "following_count": 15,
+            "posts_count": 0
+        },
+        "following": {
+            "id": 2,
+            "username": "jane_smith",
+            "email": "jane@example.com",
+            "role": "user",
+            "bio": "UX Designer",
+            "avatar_url": "https://example.com/jane-avatar.jpg",
+            "website": "https://janesmith.design",
+            "location": "London, UK",
+            "is_email_verified": true,
+            "privacy_setting": "public",
+            "followers_count": 12,
+            "following_count": 8,
+            "posts_count": 0
+        },
+        "created_at": "2024-01-15T10:30:00Z"
+    }
+]
+```
+
+### 8. Get User's Following
+**Endpoint:** `GET /api/auth/{user_id}/following/`
+**Description:** Get list of users that the user is following (respects privacy settings)
+
+**Response (200 OK):**
+```json
+[
+    {
+        "id": 2,
+        "follower": {
+            "id": 2,
+            "username": "jane_smith",
+            "email": "jane@example.com",
+            "role": "user",
+            "bio": "UX Designer",
+            "avatar_url": "https://example.com/jane-avatar.jpg",
+            "website": "https://janesmith.design",
+            "location": "London, UK",
+            "is_email_verified": true,
+            "privacy_setting": "public",
+            "followers_count": 12,
+            "following_count": 8,
+            "posts_count": 0
+        },
+        "following": {
+            "id": 4,
+            "username": "alice_jones",
+            "email": "alice@example.com",
+            "role": "user",
+            "bio": "Product Manager",
+            "avatar_url": "https://example.com/alice-avatar.jpg",
+            "website": null,
+            "location": "Berlin, Germany",
+            "is_email_verified": true,
+            "privacy_setting": "public",
+            "followers_count": 7,
+            "following_count": 5,
+            "posts_count": 0
+        },
+        "created_at": "2024-01-10T14:20:00Z"
+    }
+]
+```
+
+## 🔒 Privacy Settings
+
+The system supports three privacy levels:
+- **`public`**: Profile visible to everyone
+- **`private`**: Profile only visible to the user themselves
+- **`followers_only`**: Profile visible to authenticated users who follow the profile owner
+
+## 📝 Notes
+
+1. **Avatar Upload**: Currently uses placeholder Supabase Storage integration. You'll need to implement actual Supabase upload logic.
+2. **Posts Count**: Currently returns 0 as the posts app hasn't been implemented yet.
+3. **Authentication**: All profile management endpoints require valid JWT access token.
+4. **Privacy**: The system automatically enforces privacy settings based on user relationships and authentication status.

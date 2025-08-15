@@ -1,0 +1,460 @@
+POSTS API ENDPOINTS DOCUMENTATION
+=====================================
+
+BASE URL: http://127.0.0.1:8000/api/posts/
+
+================================================================================
+1. CREATE POST
+================================================================================
+
+Endpoint: POST /api/posts/create/
+Authentication: Required (Bearer Token)
+Content-Type: multipart/form-data
+
+Description: Create a new post with optional image upload
+
+Request Body (Form Data):
+- content: "Your post content here" (required)
+- category: "technology" (optional, default: "general")
+- image: [file upload - JPEG/PNG, max 5MB] (optional)
+
+Available Categories:
+- general
+- technology
+- lifestyle
+- travel
+- food
+- sports
+- entertainment
+- business
+- education
+- other
+
+Response (201 Created):
+{
+    "id": 1,
+    "content": "Your post content here",
+    "author": {
+        "id": 2,
+        "username": "john_doe",
+        "email": "john@example.com",
+        "role": "user",
+        "bio": "Software developer",
+        "avatar_url": "https://example.com/avatar.jpg",
+        "website": "https://johndoe.dev",
+        "location": "San Francisco, CA",
+        "is_email_verified": true,
+        "privacy_setting": "public",
+        "followers_count": 5,
+        "following_count": 3,
+        "posts_count": 1
+    },
+    "image_url": "https://supabase-url/storage/v1/object/public/posts/1/uuid-filename.jpg",
+    "category": "technology",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z",
+    "is_active": true,
+    "like_count": 0,
+    "comment_count": 0
+}
+
+Error Responses:
+- 400 Bad Request: Validation errors, file upload issues
+- 401 Unauthorized: Missing or invalid authentication
+
+Example Usage (cURL):
+curl -X POST http://127.0.0.1:8000/api/posts/create/ \
+  -H "Authorization: Bearer <your_access_token>" \
+  -F "content=Hello World! This is my first post." \
+  -F "category=technology" \
+  -F "image=@/path/to/image.jpg"
+
+================================================================================
+2. GET POST BY ID
+================================================================================
+
+Endpoint: GET /api/posts/{post_id}/
+Authentication: Not Required
+Content-Type: application/json
+
+Description: Retrieve a specific post by ID
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post to retrieve
+
+Response (200 OK):
+{
+    "id": 1,
+    "content": "Your post content here",
+    "author": {
+        "id": 2,
+        "username": "john_doe",
+        "email": "john@example.com",
+        "role": "user",
+        "bio": "Software developer",
+        "avatar_url": "https://example.com/avatar.jpg",
+        "website": "https://johndoe.dev",
+        "location": "San Francisco, CA",
+        "is_email_verified": true,
+        "privacy_setting": "public",
+        "followers_count": 5,
+        "following_count": 3,
+        "posts_count": 1
+    },
+    "image_url": "https://supabase-url/storage/v1/object/public/posts/1/uuid-filename.jpg",
+    "category": "technology",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z",
+    "is_active": true,
+    "like_count": 0,
+    "comment_count": 0
+}
+
+Error Responses:
+- 404 Not Found: Post doesn't exist or is inactive
+
+Example Usage (cURL):
+curl http://127.0.0.1:8000/api/posts/1/
+
+================================================================================
+3. UPDATE POST
+================================================================================
+
+Endpoint: PUT /api/posts/{post_id}/
+Endpoint: PATCH /api/posts/{post_id}/
+Authentication: Required (Bearer Token)
+Content-Type: multipart/form-data
+
+Description: Update own post (content, category, image)
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post to update
+
+Request Body (Form Data):
+- content: "Updated post content" (optional)
+- category: "lifestyle" (optional)
+- image: [file upload - JPEG/PNG, max 5MB] (optional)
+
+Response (200 OK):
+Returns updated post object (same structure as GET response)
+
+Error Responses:
+- 403 Forbidden: "You can only edit your own posts."
+- 404 Not Found: "Post not found."
+- 400 Bad Request: Validation errors, file upload issues
+- 401 Unauthorized: Missing or invalid authentication
+
+Example Usage (cURL):
+curl -X PUT http://127.0.0.1:8000/api/posts/1/ \
+  -H "Authorization: Bearer <your_access_token>" \
+  -F "content=Updated content for my post" \
+  -F "category=lifestyle"
+
+================================================================================
+4. DELETE POST
+================================================================================
+
+Endpoint: DELETE /api/posts/{post_id}/
+Authentication: Required (Bearer Token)
+Content-Type: application/json
+
+Description: Delete own post (soft delete - sets is_active=False)
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post to delete
+
+Response (204 No Content):
+{
+    "detail": "Post deleted successfully."
+}
+
+Error Responses:
+- 403 Forbidden: "You can only delete your own posts."
+- 404 Not Found: "Post not found."
+- 401 Unauthorized: Missing or invalid authentication
+
+Example Usage (cURL):
+curl -X DELETE http://127.0.0.1:8000/api/posts/1/ \
+  -H "Authorization: Bearer <your_access_token>"
+
+================================================================================
+5. LIST POSTS (PUBLIC)
+================================================================================
+
+Endpoint: GET /api/posts/
+Authentication: Not Required
+Content-Type: application/json
+
+Description: List all public posts with pagination and filtering
+
+Query Parameters:
+- page: Integer (optional, default: 1) - Page number
+- page_size: Integer (optional, default: 10, max: 100) - Items per page
+- category: String (optional) - Filter by category
+- author: Integer (optional) - Filter by author ID
+- search: String (optional) - Search in content and author username
+
+Available Categories for Filtering:
+- general
+- technology
+- lifestyle
+- travel
+- food
+- sports
+- entertainment
+- business
+- education
+- other
+
+Response (200 OK):
+{
+    "count": 25,
+    "next": "http://127.0.0.1:8000/api/posts/?page=2",
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "content": "Your post content here",
+            "author": {
+                "id": 2,
+                "username": "john_doe",
+                "email": "john@example.com",
+                "role": "user",
+                "bio": "Software developer",
+                "avatar_url": "https://example.com/avatar.jpg",
+                "website": "https://johndoe.dev",
+                "location": "San Francisco, CA",
+                "is_email_verified": true,
+                "privacy_setting": "public",
+                "followers_count": 5,
+                "following_count": 3,
+                "posts_count": 1
+            },
+            "image_url": "https://supabase-url/storage/v1/object/public/posts/1/uuid-filename.jpg",
+            "category": "technology",
+            "created_at": "2024-01-15T10:30:00Z",
+            "like_count": 0,
+            "comment_count": 0
+        }
+    ]
+}
+
+Example Usage (cURL):
+
+# Get all posts
+curl http://127.0.0.1:8000/api/posts/
+
+# Get posts with pagination
+curl "http://127.0.0.1:8000/api/posts/?page=2&page_size=5"
+
+# Filter by category
+curl "http://127.0.0.1:8000/api/posts/?category=technology"
+
+# Filter by author
+curl "http://127.0.0.1:8000/api/posts/?author=2"
+
+# Search posts
+curl "http://127.0.0.1:8000/api/posts/?search=hello"
+
+# Combined filters
+curl "http://127.0.0.1:8000/api/posts/?category=technology&search=django&page=1&page_size=10"
+
+================================================================================
+6. GET MY POSTS
+================================================================================
+
+Endpoint: GET /api/posts/my/
+Authentication: Required (Bearer Token)
+Content-Type: application/json
+
+Description: Get current user's posts
+
+Query Parameters:
+- page: Integer (optional, default: 1) - Page number
+- page_size: Integer (optional, default: 10, max: 100) - Items per page
+
+Response (200 OK):
+Same paginated format as list posts, but only shows posts by the authenticated user
+
+Error Responses:
+- 401 Unauthorized: Missing or invalid authentication
+
+Example Usage (cURL):
+curl http://127.0.0.1:8000/api/posts/my/ \
+  -H "Authorization: Bearer <your_access_token>"
+
+# With pagination
+curl "http://127.0.0.1:8000/api/posts/my/?page=1&page_size=5" \
+  -H "Authorization: Bearer <your_access_token>"
+
+================================================================================
+AUTHENTICATION
+================================================================================
+
+All authenticated endpoints require a valid JWT access token in the Authorization header:
+
+Authorization: Bearer <your_access_token>
+
+To get an access token, use the authentication endpoints:
+- POST /api/auth/login/ - Login and get tokens
+- POST /api/auth/token/refresh/ - Refresh expired tokens
+
+================================================================================
+ERROR RESPONSES
+================================================================================
+
+Common Error Response Format:
+{
+    "detail": "Human-readable error message"
+}
+
+HTTP Status Codes:
+- 200 OK: Successful GET/PUT/PATCH requests
+- 201 Created: Successful POST requests
+- 204 No Content: Successful DELETE requests
+- 400 Bad Request: Validation errors, file upload issues
+- 401 Unauthorized: Missing or invalid authentication
+- 403 Forbidden: Permission denied (editing/deleting others' posts)
+- 404 Not Found: Post doesn't exist
+- 500 Internal Server Error: Server-side issues
+
+================================================================================
+FILE UPLOAD SPECIFICATIONS
+================================================================================
+
+Image Upload Requirements:
+- File Format: JPEG (.jpg, .jpeg) or PNG (.png)
+- Maximum Size: 5MB
+- Content-Type: multipart/form-data
+- Field Name: "image"
+
+Image Storage:
+- Provider: Supabase Storage
+- Bucket: "myavatar" (configurable via SUPABASE_STORAGE_BUCKET env var)
+- File Path: posts/{post_id}/{uuid}.{extension}
+- Public Access: Yes (for direct image viewing)
+
+================================================================================
+PAGINATION
+================================================================================
+
+Pagination is applied to list endpoints:
+- Default page size: 10 items per page
+- Maximum page size: 100 items per page
+- Query parameter: page_size to customize
+- Response includes: count, next, previous, results
+
+Pagination Response Fields:
+- count: Total number of items
+- next: URL for next page (null if no next page)
+- previous: URL for previous page (null if no previous page)
+- results: Array of items for current page
+
+================================================================================
+SEARCH AND FILTERING
+================================================================================
+
+Search Functionality:
+- Searches in post content and author username
+- Case-insensitive search
+- Partial matching supported
+
+Filtering Options:
+- By Category: Filter posts by specific category
+- By Author: Filter posts by specific user ID
+- Combined Filters: Multiple filters can be applied together
+
+Search and Filter Query Parameters:
+- search: String to search for
+- category: Category name to filter by
+- author: User ID to filter by
+
+================================================================================
+PERMISSIONS
+================================================================================
+
+Post Permissions:
+- Create: Any authenticated user can create posts
+- Read: All posts are publicly readable (when active)
+- Update: Only the post author can update their own posts
+- Delete: Only the post author can delete their own posts
+
+Permission Enforcement:
+- Automatic permission checks on update/delete operations
+- Clear error messages for permission violations
+- Soft delete prevents data loss while maintaining referential integrity
+
+================================================================================
+NOTES
+================================================================================
+
+1. Image Upload: Uses Supabase Storage with the same pattern as avatar uploads
+2. Soft Delete: Posts are marked as inactive rather than physically deleted
+3. Permissions: Users can only edit/delete their own posts
+4. Categories: Predefined categories for better organization
+5. Pagination: Efficient pagination for large post lists
+6. Search: Basic search functionality in content and author names
+7. File Validation: Comprehensive validation for uploaded images
+8. Error Handling: Detailed error messages for debugging
+9. Performance: Database indexes for efficient querying
+10. Security: JWT-based authentication and authorization
+
+================================================================================
+TESTING EXAMPLES
+================================================================================
+
+1. Create a post without image:
+curl -X POST http://127.0.0.1:8000/api/posts/create/ \
+  -H "Authorization: Bearer <your_token>" \
+  -F "content=Hello World! This is my first post." \
+  -F "category=general"
+
+2. Create a post with image:
+curl -X POST http://127.0.0.1:8000/api/posts/create/ \
+  -H "Authorization: Bearer <your_token>" \
+  -F "content=Check out this amazing photo!" \
+  -F "category=travel" \
+  -F "image=@/path/to/photo.jpg"
+
+3. List all posts:
+curl http://127.0.0.1:8000/api/posts/
+
+4. Get specific post:
+curl http://127.0.0.1:8000/api/posts/1/
+
+5. Update a post:
+curl -X PUT http://127.0.0.1:8000/api/posts/1/ \
+  -H "Authorization: Bearer <your_token>" \
+  -F "content=Updated content for my post"
+
+6. Delete a post:
+curl -X DELETE http://127.0.0.1:8000/api/posts/1/ \
+  -H "Authorization: Bearer <your_token>"
+
+7. Search posts:
+curl "http://127.0.0.1:8000/api/posts/?search=hello"
+
+8. Filter by category:
+curl "http://127.0.0.1:8000/api/posts/?category=technology"
+
+9. Get my posts:
+curl http://127.0.0.1:8000/api/posts/my/ \
+  -H "Authorization: Bearer <your_token>"
+
+================================================================================
+ENVIRONMENT VARIABLES
+================================================================================
+
+Required Environment Variables:
+- SUPABASE_URL: Your Supabase project URL
+- SUPABASE_SERVICE_ROLE_KEY: Your Supabase service role key
+- SUPABASE_STORAGE_BUCKET: Storage bucket name (default: "myavatar")
+
+Example .env configuration:
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET=myavatar
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================

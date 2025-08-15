@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+db.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Vite cache
+.vite/
+
+# Django
+staticfiles/
+media/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp

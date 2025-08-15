@@ -1,0 +1,486 @@
+ENGAGEMENT API ENDPOINTS DOCUMENTATION
+==========================================
+
+BASE URL: http://127.0.0.1:8000/api/engagement/
+
+================================================================================
+1. LIKE POST
+================================================================================
+
+Endpoint: POST /api/engagement/posts/{post_id}/like/
+Authentication: Required (Bearer Token)
+Content-Type: application/json
+
+Description: Like a post (cannot like own posts)
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post to like
+
+Request Body: None (empty body)
+
+Response (201 Created):
+{
+    "id": 1,
+    "user": {
+        "id": 2,
+        "username": "john_doe",
+        "email": "john@example.com",
+        "role": "user",
+        "bio": "Software developer",
+        "avatar_url": "https://example.com/avatar.jpg",
+        "website": "https://johndoe.dev",
+        "location": "San Francisco, CA",
+        "is_email_verified": true,
+        "privacy_setting": "public",
+        "followers_count": 5,
+        "following_count": 3,
+        "posts_count": 1
+    },
+    "post": 1,
+    "created_at": "2024-01-15T10:30:00Z"
+}
+
+Error Responses:
+- 400 Bad Request: "You cannot like your own post." or "You have already liked this post."
+- 401 Unauthorized: Missing or invalid authentication
+- 404 Not Found: Post doesn't exist
+
+Example Usage (cURL):
+curl -X POST http://127.0.0.1:8000/api/engagement/posts/1/like/ \
+  -H "Authorization: Bearer <your_access_token>"
+
+================================================================================
+2. UNLIKE POST
+================================================================================
+
+Endpoint: DELETE /api/engagement/posts/{post_id}/unlike/
+Authentication: Required (Bearer Token)
+Content-Type: application/json
+
+Description: Unlike a post
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post to unlike
+
+Request Body: None (empty body)
+
+Response (204 No Content):
+{
+    "detail": "Post unliked successfully."
+}
+
+Error Responses:
+- 404 Not Found: Post or like doesn't exist
+- 401 Unauthorized: Missing or invalid authentication
+
+Example Usage (cURL):
+curl -X DELETE http://127.0.0.1:8000/api/engagement/posts/1/unlike/ \
+  -H "Authorization: Bearer <your_access_token>"
+
+================================================================================
+3. CHECK LIKE STATUS
+================================================================================
+
+Endpoint: GET /api/engagement/posts/{post_id}/like-status/
+Authentication: Required (Bearer Token)
+Content-Type: application/json
+
+Description: Check if current user has liked the post and get like count
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post to check
+
+Response (200 OK):
+{
+    "is_liked": true,
+    "like_count": 5
+}
+
+Error Responses:
+- 401 Unauthorized: Missing or invalid authentication
+- 404 Not Found: Post doesn't exist
+
+Example Usage (cURL):
+curl http://127.0.0.1:8000/api/engagement/posts/1/like-status/ \
+  -H "Authorization: Bearer <your_access_token>"
+
+================================================================================
+4. LIST COMMENTS
+================================================================================
+
+Endpoint: GET /api/engagement/posts/{post_id}/comments/
+Authentication: Not Required
+Content-Type: application/json
+
+Description: List all comments for a post with pagination
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post
+
+Query Parameters:
+- page: Integer (optional, default: 1) - Page number
+- page_size: Integer (optional, default: 20, max: 100) - Items per page
+
+Response (200 OK):
+{
+    "count": 15,
+    "next": "http://127.0.0.1:8000/api/engagement/posts/1/comments/?page=2",
+    "previous": null,
+    "results": [
+        {
+            "id": 1,
+            "user": {
+                "id": 2,
+                "username": "john_doe",
+                "email": "john@example.com",
+                "role": "user",
+                "bio": "Software developer",
+                "avatar_url": "https://example.com/avatar.jpg",
+                "website": "https://johndoe.dev",
+                "location": "San Francisco, CA",
+                "is_email_verified": true,
+                "privacy_setting": "public",
+                "followers_count": 5,
+                "following_count": 3,
+                "posts_count": 1
+            },
+            "post": 1,
+            "content": "Great post! Thanks for sharing.",
+            "created_at": "2024-01-15T10:30:00Z",
+            "updated_at": "2024-01-15T10:30:00Z",
+            "is_active": true
+        }
+    ]
+}
+
+Example Usage (cURL):
+
+# Get all comments
+curl http://127.0.0.1:8000/api/engagement/posts/1/comments/
+
+# Get comments with pagination
+curl "http://127.0.0.1:8000/api/engagement/posts/1/comments/?page=2&page_size=10"
+
+================================================================================
+5. ADD COMMENT
+================================================================================
+
+Endpoint: POST /api/engagement/posts/{post_id}/comments/create/
+Authentication: Required (Bearer Token)
+Content-Type: application/json
+
+Description: Add a comment to a post
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post to comment on
+
+Request Body:
+{
+    "content": "Great post! Thanks for sharing."
+}
+
+Response (201 Created):
+{
+    "id": 1,
+    "user": {
+        "id": 2,
+        "username": "john_doe",
+        "email": "john@example.com",
+        "role": "user",
+        "bio": "Software developer",
+        "avatar_url": "https://example.com/avatar.jpg",
+        "website": "https://johndoe.dev",
+        "location": "San Francisco, CA",
+        "is_email_verified": true,
+        "privacy_setting": "public",
+        "followers_count": 5,
+        "following_count": 3,
+        "posts_count": 1
+    },
+    "post": 1,
+    "content": "Great post! Thanks for sharing.",
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": "2024-01-15T10:30:00Z",
+    "is_active": true
+}
+
+Error Responses:
+- 400 Bad Request: Validation errors (empty content, etc.)
+- 401 Unauthorized: Missing or invalid authentication
+- 404 Not Found: Post doesn't exist
+
+Example Usage (cURL):
+curl -X POST http://127.0.0.1:8000/api/engagement/posts/1/comments/create/ \
+  -H "Authorization: Bearer <your_access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Great post! Thanks for sharing."}'
+
+================================================================================
+6. DELETE COMMENT
+================================================================================
+
+Endpoint: DELETE /api/engagement/posts/{post_id}/comments/{comment_id}/
+Authentication: Required (Bearer Token)
+Content-Type: application/json
+
+Description: Delete own comment or comment on own post
+
+URL Parameters:
+- post_id: Integer (required) - The ID of the post
+- comment_id: Integer (required) - The ID of the comment to delete
+
+Request Body: None (empty body)
+
+Response (204 No Content):
+{
+    "detail": "Comment deleted successfully."
+}
+
+Error Responses:
+- 403 Forbidden: "You can only delete your own comments or comments on your posts."
+- 404 Not Found: Post or comment doesn't exist
+- 401 Unauthorized: Missing or invalid authentication
+
+Example Usage (cURL):
+curl -X DELETE http://127.0.0.1:8000/api/engagement/posts/1/comments/1/ \
+  -H "Authorization: Bearer <your_access_token>"
+
+================================================================================
+AUTHENTICATION
+================================================================================
+
+All authenticated endpoints require a valid JWT access token in the Authorization header:
+
+Authorization: Bearer <your_access_token>
+
+To get an access token, use the authentication endpoints:
+- POST /api/auth/login/ - Login and get tokens
+- POST /api/auth/token/refresh/ - Refresh expired tokens
+
+================================================================================
+ERROR RESPONSES
+================================================================================
+
+Common Error Response Format:
+{
+    "detail": "Human-readable error message"
+}
+
+HTTP Status Codes:
+- 200 OK: Successful GET requests
+- 201 Created: Successful POST requests
+- 204 No Content: Successful DELETE requests
+- 400 Bad Request: Validation errors, duplicate likes, self-likes
+- 401 Unauthorized: Missing or invalid authentication
+- 403 Forbidden: Permission denied for comment deletion
+- 404 Not Found: Post or comment doesn't exist
+- 500 Internal Server Error: Server-side issues
+
+================================================================================
+PAGINATION
+================================================================================
+
+Pagination is applied to comment list endpoints:
+- Default page size: 20 comments per page
+- Maximum page size: 100 comments per page
+- Query parameter: page_size to customize
+- Response includes: count, next, previous, results
+
+Pagination Response Fields:
+- count: Total number of comments
+- next: URL for next page (null if no next page)
+- previous: URL for previous page (null if no previous page)
+- results: Array of comments for current page
+
+================================================================================
+PERMISSIONS
+================================================================================
+
+Like Permissions:
+- Create: Any authenticated user can like posts (except their own)
+- Delete: Users can only unlike their own likes
+- Read: Like status is visible to authenticated users
+
+Comment Permissions:
+- Create: Any authenticated user can comment on posts
+- Read: All comments are publicly readable (when active)
+- Delete: Users can delete their own comments or comments on their posts
+
+Permission Enforcement:
+- Automatic permission checks on all operations
+- Clear error messages for permission violations
+- Soft delete for comments maintains data integrity
+
+================================================================================
+BUSINESS RULES
+================================================================================
+
+Like System Rules:
+1. Users cannot like their own posts
+2. Users can only like a post once (unique constraint)
+3. Likes are automatically deleted when posts are deleted
+4. Like counts are computed dynamically
+
+Comment System Rules:
+1. Any authenticated user can comment on any post
+2. Comments use soft delete (is_active flag)
+3. Users can delete their own comments
+4. Post authors can delete any comment on their posts
+5. Comments are ordered by creation time (oldest first)
+
+================================================================================
+NOTES
+================================================================================
+
+1. Like Constraints: Users cannot like their own posts
+2. Comment Permissions: Flexible deletion permissions (own comments or comments on own posts)
+3. Soft Delete: Comments use soft delete to maintain data integrity
+4. Pagination: Comments are paginated for performance
+5. Real-time Counts: Like and comment counts are computed dynamically
+6. Data Integrity: Proper foreign key relationships and constraints
+7. Performance: Optimized queries with proper indexing
+8. Security: Proper authentication and permission checks
+9. Error Handling: Comprehensive error messages and status codes
+10. Scalability: Designed for high-traffic applications
+
+================================================================================
+TESTING EXAMPLES
+================================================================================
+
+1. Like a post:
+curl -X POST http://127.0.0.1:8000/api/engagement/posts/1/like/ \
+  -H "Authorization: Bearer <your_token>"
+
+2. Check like status:
+curl http://127.0.0.1:8000/api/engagement/posts/1/like-status/ \
+  -H "Authorization: Bearer <your_token>"
+
+3. Unlike a post:
+curl -X DELETE http://127.0.0.1:8000/api/engagement/posts/1/unlike/ \
+  -H "Authorization: Bearer <your_token>"
+
+4. Add a comment:
+curl -X POST http://127.0.0.1:8000/api/engagement/posts/1/comments/create/ \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Great post!"}'
+
+5. List comments:
+curl http://127.0.0.1:8000/api/engagement/posts/1/comments/
+
+6. Delete comment:
+curl -X DELETE http://127.0.0.1:8000/api/engagement/posts/1/comments/1/ \
+  -H "Authorization: Bearer <your_token>"
+
+7. Try to like own post (should fail):
+curl -X POST http://127.0.0.1:8000/api/engagement/posts/1/like/ \
+  -H "Authorization: Bearer <post_author_token>"
+
+8. Try to like same post twice (should fail):
+curl -X POST http://127.0.0.1:8000/api/engagement/posts/1/like/ \
+  -H "Authorization: Bearer <your_token>"
+
+9. Try to delete others' comment (should fail):
+curl -X DELETE http://127.0.0.1:8000/api/engagement/posts/1/comments/1/ \
+  -H "Authorization: Bearer <different_user_token>"
+
+================================================================================
+INTEGRATION WITH POSTS SYSTEM
+================================================================================
+
+The Engagement system integrates seamlessly with the Posts system:
+
+Post Model Properties:
+- like_count: Returns the number of likes on the post
+- comment_count: Returns the number of active comments on the post
+
+API Consistency:
+- Follows the same authentication patterns as Posts API
+- Uses consistent error response formats
+- Maintains similar URL structure and naming conventions
+
+Data Relationships:
+- Likes and Comments have foreign key relationships to Posts
+- Automatic cleanup when posts are deleted
+- Proper indexing for efficient queries
+
+================================================================================
+PERFORMANCE CONSIDERATIONS
+================================================================================
+
+Database Optimization:
+- Indexes on frequently queried fields (post, user, created_at)
+- Efficient pagination with proper ordering
+- Computed properties for counts
+- Unique constraints for data integrity
+
+Query Optimization:
+- Selective field loading for large datasets
+- Proper use of select_related for foreign keys
+- Efficient filtering and ordering
+- Soft delete queries only include active records
+
+================================================================================
+SECURITY FEATURES
+================================================================================
+
+Authentication:
+- JWT-based authentication for all protected endpoints
+- Proper token validation and expiration handling
+
+Authorization:
+- Role-based access control
+- User-specific permissions for likes and comments
+- Prevention of self-likes and unauthorized deletions
+
+Data Protection:
+- Input validation and sanitization
+- SQL injection prevention through ORM
+- XSS protection through proper serialization
+
+================================================================================
+MONITORING AND ANALYTICS
+================================================================================
+
+Engagement Metrics:
+- Like counts per post
+- Comment counts per post
+- User engagement patterns
+- Post popularity indicators
+
+Performance Metrics:
+- API response times
+- Database query performance
+- Error rates and types
+- User activity patterns
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Common Issues:
+
+1. "You cannot like your own post" error:
+   - This is expected behavior to prevent self-promotion
+   - Users should not be able to like their own posts
+
+2. "You have already liked this post" error:
+   - Check if the user has already liked the post
+   - Use the like-status endpoint to check current state
+
+3. "You can only delete your own comments or comments on your posts" error:
+   - Users can only delete their own comments
+   - Post authors can delete any comment on their posts
+
+4. Comment not appearing in list:
+   - Check if the comment is marked as active (is_active=True)
+   - Verify the post is active and exists
+
+5. Like count not updating:
+   - Like counts are computed dynamically
+   - Check if the like was actually created/deleted
+   - Verify the post exists and is active
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
