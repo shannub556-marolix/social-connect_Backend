@@ -18,6 +18,21 @@ class UserSerializer(serializers.ModelSerializer):
             data['website'] = 'https://' + data['website']
         if data.get('avatar_url') and not data['avatar_url'].startswith(('http://', 'https://')):
             data['avatar_url'] = 'https://' + data['avatar_url']
+        
+        # Ensure date_joined is in a consistent format
+        if data.get('date_joined'):
+            try:
+                from django.utils import timezone
+                # Convert to UTC and format as ISO string
+                if hasattr(instance.date_joined, 'isoformat'):
+                    data['date_joined'] = instance.date_joined.isoformat()
+                else:
+                    # Fallback for string dates
+                    data['date_joined'] = str(instance.date_joined)
+            except Exception as e:
+                # If there's any error, keep the original value
+                pass
+        
         return data
 
 class RegisterSerializer(serializers.ModelSerializer):
